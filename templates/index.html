@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        /* Floating chat icon at the bottom right */
+        #chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 60px;
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        /* Chat window container */
+        #chat-window {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        /* Chat header */
+        #chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        /* Chat messages area */
+        #chat-messages {
+            padding: 10px;
+            height: 290px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        /* Chat input area */
+        #chat-input {
+            padding: 10px;
+            display: flex;
+        }
+        #chat-input input {
+            width: 80%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #chat-input button {
+            width: 20%;
+            padding: 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Floating chat icon -->
+<div id="chat-icon">💬</div>
+
+<!-- Chat window -->
+<div id="chat-window">
+    <div id="chat-header">Chatbot</div>
+    <div id="chat-messages"></div>
+    <div id="chat-input">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    // Toggle chat window display
+    document.getElementById('chat-icon').onclick = function() {
+        var chatWindow = document.getElementById('chat-window');
+        if (chatWindow.style.display === "none") {
+            chatWindow.style.display = "block";
+        } else {
+            chatWindow.style.display = "none";
+        }
+    };
+
+    // Send message to Flask API and display response
+    function sendMessage() {
+        var userInput = document.getElementById('user-input').value;
+        if (userInput === "") return;
+
+        // Display the user's message in the chat window
+        var chatMessages = document.getElementById('chat-messages');
+        var userMessageDiv = document.createElement('div');
+        userMessageDiv.textContent = "You: " + userInput;
+        chatMessages.appendChild(userMessageDiv);
+
+        // Clear input field
+        document.getElementById('user-input').value = "";
+
+        // Send user's message to Flask server
+        fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: userInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Display the chatbot's response in the chat window
+            var botMessageDiv = document.createElement('div');
+            botMessageDiv.textContent = "Bot: " + data.response;
+            chatMessages.appendChild(botMessageDiv);
+
+            // Auto-scroll to the bottom of the chat window
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    }
+</script>
+
+</body>
+</html>
